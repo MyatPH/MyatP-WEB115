@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Manager - Updated Buttons</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f2f7;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        #taskmanager {
+            margin-top: 20px;
+        }
+
+        .task {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+            border-left: 10px solid gray;
+            transition: transform .15s;
+        }
+
+        .task:hover {
+            transform: scale(1.02);
+        }
+
+        .priority-High { border-left-color: #ff4d4d; }  
+        .priority-Medium { border-left-color: #ffae42; }
+        .priority-Low { border-left-color: #4CAF50; }
+
+        .important {
+            background: #ffe5e5;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .meta {
+            color: #777;
+            font-size: 0.8em;
+        }
+
+        button {
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        /* Updated buttons */
+        .btn-important {
+            background: #ff4d4d; /* Strong red */
+            color: #fff;
+            font-weight: bold;
+        }
+        .btn-important:hover {
+            background: #e60000;
+        }
+
+        .btn-complete {
+            background: #ccffcc;
+        }
+
+        /* Delete button: no color, plain text */
+        .btn-delete {
+            background: none;
+            color: #333;
+            font-weight: bold;
+            padding: 6px;
+        }
+        .btn-delete:hover {
+            text-decoration: underline;
+            color: #ff4d4d;
+        }
+
+        /* Full-width Add Task button */
+        .btn-primary {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 14px 18px;
+            font-weight: 800;
+            letter-spacing: .3px;
+            border-radius: 12px;
+            color: #ffffff;
+            background: linear-gradient(135deg, #1e90ff, #6aa8ff);
+            box-shadow: 0 8px 16px rgba(30, 144, 255, 0.35);
+            transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+            border: 2px solid rgba(255,255,255,.4);
+            margin-top: 8px;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 22px rgba(30, 144, 255, 0.45);
+            filter: brightness(1.05);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        #taskName {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #c9d4e3;
+            background: #fff;
+            min-width: 220px;
+        }
+        #taskPriority {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #c9d4e3;
+            background: #fff;
+        }
+        .controls label {
+            background: #fff;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #e0e6ef;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Task Manager</h2>
+
+<div class="composer">
+    <div class="controls">
+        <input id="taskName" type="text" placeholder="Task name">
+        <select id="taskPriority">
+            <option>High</option>
+            <option selected>Medium</option>
+            <option>Low</option>
+        </select>
+
+        <label><input type="checkbox" id="taskImportant"> Important</label>
+        <label><input type="checkbox" id="taskCompleted"> Completed</label>
+    </div>
+
+    <button id="btnAdd" class="btn-primary" onclick="addTask()">
+        Add Task
+    </button>
+</div>
+
+<hr>
+
+<div id="taskmanager"></div>
+
+<script>
+let tasks = [];
+let nextId = 1;
+
+const nameInput = document.getElementById("taskName");
+const btnAdd = document.getElementById("btnAdd");
+
+function updateAddButtonState() {
+    btnAdd.disabled = nameInput.value.trim().length === 0;
+}
+nameInput.addEventListener("input", updateAddButtonState);
+updateAddButtonState();
+
+function addTask() {
+    let name = nameInput.value.trim();
+    if (!name) {
+        alert("Task name cannot be empty.");
+        return;
+    }
+
+    let task = {
+        id: nextId++,
+        name,
+        priority: document.getElementById("taskPriority").value,
+        isImportant: document.getElementById("taskImportant").checked,
+        isCompleted: document.getElementById("taskCompleted").checked,
+        date: new Date().toLocaleString()
+    };
+
+    tasks.push(task);
+    nameInput.value = "";
+    updateAddButtonState();
+    render();
+}
+
+function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    render();
+}
+
+function toggleImportant(id) {
+    let task = tasks.find(t => t.id === id);
+    if (task) {
+        task.isImportant = !task.isImportant;
+        render();
+    }
+}
+
+function toggleCompleted(id) {
+    let task = tasks.find(t => t.id === id);
+    if (task) {
+        task.isCompleted = !task.isCompleted;
+        render();
+    }
+}
+
+function render() {
+    let box = document.getElementById("taskmanager");
+    box.innerHTML = "";
+
+    tasks.forEach(task => {
+        let div = document.createElement("div");
+        div.className = `task priority-${task.priority}`;
+        if (task.isImportant) div.classList.add("important");
+        if (task.isCompleted) div.classList.add("completed");
+
+        div.innerHTML = `
+            <strong>${task.name}</strong><br>
+            <span class="meta">Added on: ${task.date}</span><br><br>
+
+            <button class="btn-important" onclick="toggleImportant(${task.id})">Important</button>
+            <button class="btn-complete" onclick="toggleCompleted(${task.id})">Done</button>
+            <button class="btn-delete" onclick="deleteTask(${task.id})">Delete</button>
+        `;
+
+        box.appendChild(div);
+    });
+}
+</script>
+
+</body>
+</html>
