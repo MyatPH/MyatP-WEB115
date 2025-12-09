@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Manager - Unique Version</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f2f7;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        #taskmanager {
+            margin-top: 20px;
+        }
+
+        .task {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+            border-left: 10px solid gray;
+            transition: transform .15s;
+        }
+
+        .task:hover {
+            transform: scale(1.02);
+        }
+
+        .priority-High { border-left-color: #ff4d4d; }  
+        .priority-Medium { border-left-color: #ffae42; }
+        .priority-Low { border-left-color: #4CAF50; }
+
+        .important {
+            background: #ffe5e5;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .meta {
+            color: #777;
+            font-size: 0.8em;
+        }
+
+        button {
+            margin-top: 6px;
+            border: none;
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .btn-delete { background: #ffcccc; }
+        .btn-complete { background: #ccffcc; }
+        .btn-important { background: #ffd9d9; }
+    </style>
+</head>
+
+<body>
+
+<h2>Task Manager</h2>
+
+<input id="taskName" type="text" placeholder="Task name">
+
+<select id="taskPriority">
+    <option>High</option>
+    <option selected>Medium</option>
+    <option>Low</option>
+</select>
+
+<label><input type="checkbox" id="taskImportant"> Important</label>
+<label><input type="checkbox" id="taskCompleted"> Completed</label>
+
+<button onclick="addTask()">Add Task</button>
+
+<hr>
+
+<div id="taskmanager"></div>
+
+<script>
+let tasks = [];
+let nextId = 1;
+
+// Add Task
+function addTask() {
+    let name = document.getElementById("taskName").value.trim();
+    if (name === "") {
+        alert("Task name cannot be empty.");
+        return;
+    }
+
+    let task = {
+        id: nextId++,
+        name,
+        priority: document.getElementById("taskPriority").value,
+        isImportant: document.getElementById("taskImportant").checked,
+        isCompleted: document.getElementById("taskCompleted").checked,
+        date: new Date().toLocaleString()
+    };
+
+    tasks.push(task);
+    render();
+}
+
+// Delete
+function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    render();
+}
+
+// Toggle Important
+function toggleImportant(id) {
+    let task = tasks.find(t => t.id === id);
+    task.isImportant = !task.isImportant;
+    render();
+}
+
+// Toggle Completed
+function toggleCompleted(id) {
+    let task = tasks.find(t => t.id === id);
+    task.isCompleted = !task.isCompleted;
+    render();
+}
+
+// Render tasks using innerHTML
+function render() {
+    let box = document.getElementById("taskmanager");
+    box.innerHTML = "";
+
+    tasks.forEach(task => {
+        let div = document.createElement("div");
+        div.className = `task priority-${task.priority}`;
+
+        if (task.isImportant) div.classList.add("important");
+        if (task.isCompleted) div.classList.add("completed");
+
+        div.innerHTML = `
+            <strong>${task.name}</strong><br>
+            <span class="meta">Added on: ${task.date}</span><br><br>
+
+            <button class="btn-important" onclick="toggleImportant(${task.id})">⭐ Important</button>
+            <button class="btn-complete" onclick="toggleCompleted(${task.id})">✔ Done</button>
+            <button class="btn-delete" onclick="deleteTask(${task.id})">❌ Delete</button>
+        `;
+
+        box.appendChild(div);
+    });
+
+    console.log(JSON.stringify(tasks));
+}
+</script>
+
+</body>
+</html>
